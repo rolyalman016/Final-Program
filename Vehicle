@@ -1,0 +1,89 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
+
+class Vehicle {
+    private String make;
+    private String model;
+    private double milesPerGallon;
+
+    public Vehicle(String make, String model, double milesPerGallon) {
+        this.make = make;
+        this.model = model;
+        this.milesPerGallon = milesPerGallon;
+    }
+
+    public double getMilesPerGallon() {
+        return milesPerGallon;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Make: %s, Model: %s, MPG: %.2f", make, model, milesPerGallon);
+    }
+}
+
+public class VehicleManager {
+    public static void main(String[] args) {
+        List<Vehicle> vehicles = new LinkedList<>();
+        try (Scanner scanner = new Scanner(System.in)) {  // Auto-close the scanner
+            System.out.println("Enter vehicle data (type 'done' to finish):");
+
+            while (true) {
+                System.out.print("Enter make: ");
+                String make = scanner.nextLine().trim();
+                if (make.equalsIgnoreCase("done")) break;
+                if (make.isEmpty()) {  // Handle empty make input
+                    System.out.println("Make cannot be empty. Please try again.");
+                    continue;
+                }
+
+                System.out.print("Enter model: ");
+                String model = scanner.nextLine().trim();
+                if (model.isEmpty()) {  // Handle empty model input
+                    System.out.println("Model cannot be empty. Please try again.");
+                    continue;
+                }
+
+                double mpg = promptForValidMPG(scanner);
+                vehicles.add(new Vehicle(make, model, mpg));
+            }
+        }
+
+       
+        vehicles.sort(Comparator.comparingDouble(Vehicle::getMilesPerGallon));
+
+    
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("vehicles.txt"))) {
+            for (Vehicle vehicle : vehicles) {
+                writer.write(vehicle.toString());
+                writer.newLine();
+            }
+            System.out.println("Vehicle data saved to vehicles.txt");
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    private static double promptForValidMPG(Scanner scanner) {
+        double mpg = -1;
+        while (true) {
+            System.out.print("Enter miles per gallon (positive number): ");
+            try {
+                mpg = Double.parseDouble(scanner.nextLine().trim());
+                if (mpg > 0) {
+                    break;
+                } else {
+                    System.out.println("MPG must be a positive number. Try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+        return mpg;
+    }
+}
