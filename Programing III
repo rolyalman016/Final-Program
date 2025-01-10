@@ -1,0 +1,79 @@
+import java.util.Scanner;
+
+public class WeeklyIncomeAndThreadCounter {
+
+    public static void main(String[] args) {
+        
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter weekly income: ");
+        double weeklyIncome = scanner.nextDouble();
+
+        double deduction = 0.0;
+
+        if (weeklyIncome < 500) {
+            deduction = 0.1 * weeklyIncome;
+        } else if (weeklyIncome > 1000) {
+            deduction = 0.15 * weeklyIncome;
+        }
+
+        double finalIncome = weeklyIncome - deduction;
+
+        System.out.println("Weekly income after deduction: $" + finalIncome);
+
+        
+        Thread threadOne = new Thread(new CountUpTask());
+        Thread threadTwo = new Thread(new CountDownTask(threadOne));
+
+        threadOne.start();
+    }
+}
+
+class CountUpTask implements Runnable {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 20; i++) {
+            System.out.println("Counting up: " + i);
+            try {
+                Thread.sleep(100); 
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted: " + e.getMessage());
+            }
+        }
+
+        
+        System.out.println("ThreadOne finished counting up!");
+    }
+}
+
+class CountDownTask implements Runnable {
+    private final Thread dependency;
+
+    public CountDownTask(Thread dependency) {
+        this.dependency = dependency;
+    }
+
+    @Override
+    public void run() {
+        try {
+            
+            dependency.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Thread interrupted: " + e.getMessage());
+        }
+
+        for (int i = 20; i >= 0; i--) {
+            System.out.println("Counting down: " + i);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted: " + e.getMessage());
+            }
+        }
+
+        System.out.println("ThreadTwo finished counting down!");
+    }
+}
